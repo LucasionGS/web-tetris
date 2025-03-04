@@ -71,17 +71,24 @@ export default class Tetris {
         // debugger;
         ctx.fillStyle = "#" + color;
         ctx.fillRect(x * this.blockWidth, y * this.blockHeight, this.blockWidth, this.blockHeight)
+        ctx.strokeStyle = "#fff";
+        ctx.strokeRect(x * this.blockWidth, y * this.blockHeight, this.blockWidth, this.blockHeight)
+        // Add depth
+        ctx.strokeStyle = "#1f1f1f";
+        ctx.strokeRect(x * this.blockWidth, y * this.blockHeight, this.blockWidth, 1)
+        ctx.strokeRect(x * this.blockWidth, y * this.blockHeight, 1, this.blockHeight)
       }
     }
 
     // Display scores
     ctx.fillStyle = "#fff";
     ctx.font = "20px Arial";
-    ctx.fillText(`Score: ${this.score}`, 10, 30);
+    ctx.fillText(`Score: ${this.score} (${this.topScore})`, 10, 30);
     ctx.fillText(`Level: ${this.level}`, 10, 60);
     ctx.fillText(`Lines: ${this.lines}`, 10, 90);
   }
 
+  public topScore = +(localStorage.getItem("topScore") || 0);
   public score = 0;
   public level = 0;
   public lines = 0;
@@ -89,7 +96,11 @@ export default class Tetris {
   public spawn(piece: Piece<PieceType>): Piece<PieceType>;
   public spawn(type: PieceType): Piece<PieceType>;
   public spawn(piece: PieceType | Piece<PieceType>) {
-    if (!(piece instanceof Piece)) {
+    if (!piece) {
+      const pieces: PieceType[] = ["O", "I", "S", "Z", "L", "J", "T"];
+      return pieces[Math.floor(Math.random() * pieces.length)];
+    }
+    else if (!(piece instanceof Piece)) {
       piece = new Piece(piece, this);
     }
 
@@ -107,6 +118,11 @@ export default class Tetris {
     if (lines > 0) {
       this.lines += lines;
       this.score += [0, 40, 100, 300, 1200][lines] * (this.level + 1);
+
+      if (this.score > this.topScore) {
+        this.topScore = this.score;
+        localStorage.setItem("topScore", this.topScore.toString());
+      }
 
       if (this.lines >= (this.level + 1) * 10) {
         this.level++;
