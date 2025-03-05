@@ -41,9 +41,15 @@ addEventListener("DOMContentLoaded", () => {
 
 function showInstructions() {
   alert(`
+PC CONTROLS:
 Use the arrow keys or ASD to move the piece.
 Use the space bar to drop the piece.
 Use the W key or Arrow Up to rotate the piece 90 degrees.
+
+MOBILE CONTROLS:
+- Swipe to move the piece.
+- Swipe up to quick drop.
+- Tap to rotate.
           `.trim());
 }
 
