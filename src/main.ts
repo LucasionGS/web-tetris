@@ -10,11 +10,13 @@ const tetris = new Tetris(canvas);
 let curCycle = tetris.cycle();
 const nextPiece = () => curCycle.next().value!;
 let cur: Piece<PieceType> = tetris.spawn(nextPiece());
-
+let falling = false;
 function goDown() {
   if (!cur) {
+    falling = false;
     return;
   }
+  falling = true;
   if (!cur.down()) {
     cur = tetris.spawn(nextPiece());
   }
@@ -51,7 +53,7 @@ addEventListener("keydown", (e) => {
   if (e.key === "a" || e.key == "ArrowLeft") cur.right();
   if (e.key === "s" || e.key == "ArrowDown") cur.down();
   if (e.key === "w" || e.key == "ArrowUp") cur.rotate();
-  if (e.key === "r") location.reload();
+  if (e.key === "r") restart();
   if (e.key === " ") {
     for (let i = 0; i < tetris.height; i++) {
       cur.down();
@@ -72,6 +74,11 @@ canvas.addEventListener("touchstart", (e) => {
 
 canvas.addEventListener("touchend", (e) => {
   e.preventDefault();
+  // If triple tap, restart
+  if (e.touches.length == 3) {
+    restart();
+    return;
+  } 
   
   const diffTouch = e.changedTouches[0];
   const x = diffTouch.clientX - touch!.clientX;
@@ -81,6 +88,7 @@ canvas.addEventListener("touchend", (e) => {
   const useY = toUse == "y";
 
   // Hold for 1 seconds to fullscreen
+  console.log(e.timeStamp - touchEvent!.timeStamp);
   if (e.timeStamp - touchEvent!.timeStamp > 1000) {
     if (!document.fullscreenElement) {
       canvas.requestFullscreen({
@@ -115,3 +123,13 @@ canvas.addEventListener("touchend", (e) => {
   touchEvent = null;
   touch = null;
 });
+
+function restart() {
+  tetris.restart();
+  curCycle = tetris.cycle();
+  cur = tetris.spawn(nextPiece());
+
+  if (!falling) {
+    goDown();
+  }
+}

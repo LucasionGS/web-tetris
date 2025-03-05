@@ -33,6 +33,14 @@ export default class Tetris {
     this.gameloop();
   }
 
+  public restart() {
+    this.grid = new Array(this.height).fill(null).map(_ => new Array(this.width).fill(null))
+    this.pieces = new Array(this.height).fill(null).map(_ => new Array(this.width).fill(null))
+    this.score = 0;
+    this.level = 0;
+    this.lines = 0;
+  }
+
   private blockWidth: number;
   private blockHeight: number;
 
