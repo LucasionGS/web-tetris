@@ -1,21 +1,22 @@
 import "./style.css";
 import Tetris from "./tetris/Tetris";
-import { PieceType } from "./tetris/Piece";
+import Piece, { PieceType } from "./tetris/Piece";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#game")!;
 
 const tetris = new Tetris(canvas);
 
-const randomPiece = () => {
-  const pieces: PieceType[] = ["O", "I", "S", "Z", "L", "J", "T"];
-  return pieces[Math.floor(Math.random() * pieces.length)];
-};
 
-let cur = tetris.spawn(randomPiece());
+let curCycle = tetris.cycle();
+const nextPiece = () => curCycle.next().value!;
+let cur: Piece<PieceType> = tetris.spawn(nextPiece());
 
 function goDown() {
+  if (!cur) {
+    return;
+  }
   if (!cur.down()) {
-    cur = tetris.spawn(randomPiece());
+    cur = tetris.spawn(nextPiece());
   }
 
   setTimeout(() => {
@@ -55,6 +56,62 @@ addEventListener("keydown", (e) => {
     for (let i = 0; i < tetris.height; i++) {
       cur.down();
     }
-    cur = tetris.spawn(randomPiece());
+    cur = tetris.spawn(nextPiece());
   }
+});
+
+// Phone controls
+
+let touchEvent: TouchEvent | null;
+let touch: Touch | null;
+canvas.addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  touchEvent = e;
+  touch = e.touches[0];
+});
+
+canvas.addEventListener("touchend", (e) => {
+  e.preventDefault();
+  
+  const diffTouch = e.changedTouches[0];
+  const x = diffTouch.clientX - touch!.clientX;
+  const y = diffTouch.clientY - touch!.clientY;
+  const toUse = Math.abs(x) > Math.abs(y) ? "x" : "y";
+  const useX = toUse == "x";
+  const useY = toUse == "y";
+
+  // Hold for 1 seconds to fullscreen
+  if (e.timeStamp - touchEvent!.timeStamp > 1000) {
+    if (!document.fullscreenElement) {
+      canvas.requestFullscreen({
+        navigationUI: "hide"
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  }
+  else if (x == y) {
+    cur.rotate();
+  }
+  else if (useX) {
+    if (x >= 0) {
+      cur.left();
+    } else {
+      cur.right();
+    }
+  }
+  else if (useY) {
+    if (y >= 0) {
+      cur.down();
+    }
+    else if (y <= 0) {
+      for (let i = 0; i < tetris.height; i++) {
+        cur.down();
+      }
+      cur = tetris.spawn(nextPiece());
+    }
+  }
+
+  touchEvent = null;
+  touch = null;
 });

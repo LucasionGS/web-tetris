@@ -99,6 +99,7 @@ export default class Piece<T extends PieceType> {
     const g = this.game;
     const pa = this.cycle[direction];
     const pi = this.pivots[direction];
+    const newColumns: [number | null, | number | null] = [null, null];
 
     for (let iy = 0; iy < pa.length; iy++) {
       const row = pa[iy];
@@ -115,13 +116,21 @@ export default class Piece<T extends PieceType> {
           switch (xItem) {
             case "X":
             case "O":
-              g.setGrid(-pi.x + ix + x, -pi.y + iy + y, color)
+              const posX = -pi.x + ix + x;
+              g.setGrid(posX, -pi.y + iy + y, color)
+              if (newColumns[0] === null || posX < newColumns[0]!) {
+                newColumns[0] = posX;
+              }
+              if (newColumns[1] === null || posX > newColumns[1]!) {
+                newColumns[1] = posX;
+              }
               break;
           }
         }
       }
     }
 
+    [g.lastDrawColumns[0], g.lastDrawColumns[1]] = [newColumns[0]!, newColumns[1]!];
     return true;
   }
 

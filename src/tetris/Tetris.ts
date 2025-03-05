@@ -36,6 +36,8 @@ export default class Tetris {
   private blockWidth: number;
   private blockHeight: number;
 
+  public lastDrawColumns: [number, number] = [0, 0];
+
   private grid: (HexColor | null)[][];
   public getGrid(x: number, y: number) { {
     if (y < 0) return null;
@@ -62,6 +64,14 @@ export default class Tetris {
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
+    // Mark the current filled columns
+    ctx.fillStyle = "#1f1f1f";
+    ctx.fillRect(this.lastDrawColumns[0] * this.blockWidth, 0, (this.lastDrawColumns[1] - this.lastDrawColumns[0] + 1) * this.blockWidth, this.canvas.height);
+    
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 5;
+    ctx.strokeRect(0, 0, this.canvas.width, this.canvas.height);
+
     for (let y = 0; y < this.grid.length; y++) {
       const gridItem = this.grid[y];
       for (let x = 0; x < gridItem.length; x++) {
@@ -69,6 +79,7 @@ export default class Tetris {
         if (!color) continue;
 
         // debugger;
+        ctx.lineWidth = 2;
         ctx.fillStyle = "#" + color;
         ctx.fillRect(x * this.blockWidth, y * this.blockHeight, this.blockWidth, this.blockHeight)
         ctx.strokeStyle = "#fff";
@@ -145,5 +156,26 @@ export default class Tetris {
     piece.set(x, y);
 
     return piece;
+  }
+
+  public generateCycle() {
+    const types: PieceType[] = ["O", "I", "S", "Z", "L", "J", "T"];
+    // Randomize the order
+    for (let i = 0; i < types.length; i++) {
+      const j = Math.floor(Math.random() * types.length);
+      [types[i], types[j]] = [types[j], types[i]];
+    }
+
+    return types;
+  }
+
+  public *cycle() {
+    let types = this.generateCycle();
+    while (true) {
+      for (const type of types) {
+        yield type;
+      }
+      types = this.generateCycle();
+    }
   }
 }
